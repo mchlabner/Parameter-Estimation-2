@@ -1,0 +1,74 @@
+library(genalg)
+
+expectation <- function (a) {
+(1.32*10.24/(6.16-1)*(1-(10.24/(10.24+1))^(6.16-1)))-(1.32*10.24/(6.16-1)*(1-(10.24/(10.24+1))^(6.16-1)))^2+(2*1.32*(1.32+(1/a))*10.24/(6.16-1))*((10.24/(6.16-2))-10.24/(6.16-2)*((10.24/(10.24+1))^(6.16-1))-(1*(10.24/(10.24+1))^(6.16-1)))
+}
+
+expectation(1)
+
+expectation(2)
+
+df.data <- read.csv("Parameter_est_survey.csv", sep = ',')
+
+length(names(df.data))
+
+names(df.data)
+
+proper.names <- c('customer'; '2017.11'; '2017.12'; '2018.7'; '2017.8'; '2017.9'; '2017.10'; '2017.11'; '2017.12'; '2018.1'; '2018.2'; '2018.3'; '2018.4')
+
+names(df.data) <- proper.names
+
+df.data
+
+XTXM <- 1
+for (i in 2:length(names(df.data))){
+    XTXM[i-1] <- var(df.data[, i],na.rm=TRUE)
+}
+
+XTXM
+
+dump('XTXM', file = 'XTXM.r')
+
+BitsToInt<-function(x) {
+    packBits(rev(c(rep(FALSE, 32-length(x)%%32), as.logical(x))), "integer")
+}
+
+genalg.function <- function(chromosome){
+    chr.a <- chromosome[1:14]
+    val.a <- BitsToInt(chr.a) / 100 + 0.0000001
+    exp <- expectation(val.a)
+    XTXM <-source('XTXM.r')
+    XTXM <- XTXM$value
+    result <- sum((XTXM - exp)^2)
+    result
+}
+
+chromosome <- 1
+chromosome[1:14] <- 1
+genalg.function(chromosome)
+
+ga.results <- rbga.bin(size = 14, popSize = 100, iters = 100, mutationChance = 0.3, evalFunc = genalg.function)
+
+plot(ga.results)
+
+str(ga.results)
+
+results.matrix <- cbind(ga.results$population, ga.results$evaluations)
+
+ordered.matrix <- results.matrix[order(results.matrix[, ncol(results.matrix)]), ]
+
+chromosome <- ordered.matrix[1, ]
+
+chromosome <- chromosome[1:14]
+
+function.parameters <- function(chromosome){
+    chr.r.a <- chromosome[1:14]
+    val.r.a <- BitsToInt(chr.a) / 100 + 0.0000001
+    result <- numeric(0)
+    result$a <- val.a
+    result
+}
+
+params <- function.parameters(chromosome)
+
+params
